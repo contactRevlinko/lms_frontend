@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import AddTeam from "./AddTeam";
+import EditTeam from "./EditTeam";
 import CustomPopupDelete from "./CustomPopupDelete";
 import { fetchTeamList, removeteamMember } from "../redux/teamSlice";
 import { useDispatch, useSelector } from "react-redux";
-import { Trash2, Users, KeyRound, X, Eye, EyeOff } from "lucide-react";
+import { Trash2, Users, KeyRound, X, Eye, EyeOff, Pencil } from "lucide-react";
 import toast from "react-hot-toast";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
@@ -18,6 +19,7 @@ const Team = () => {
   const [openAddTeam, setOpenAddTeam] = useState(false);
   const [deletePopup, setDeletePopup] = useState(false);
   const [selectedId, setSelectedId] = useState("");
+  const [editTeamData, setEditTeamData] = useState(null);
 
   const [passwordPopup, setPasswordPopup] = useState(false);
   const [passwordMemberId, setPasswordMemberId] = useState("");
@@ -212,7 +214,7 @@ const Team = () => {
                 "EMAIL",
                 "ROLE",
                 "CHANGE PASSWORD",
-                "DELETE",
+                "ACTIONS",
               ].map((head) => (
                 <th
                   key={head}
@@ -265,7 +267,14 @@ const Team = () => {
                     </button>
                   </td>
 
-                  <td className="px-5 py-4">
+                  <td className="px-5 py-4 flex items-center gap-2">
+                    <button
+                      onClick={() => setEditTeamData(teamMem)}
+                      className="w-9 h-9 rounded-lg border border-indigo-100 text-indigo-500 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 flex items-center justify-center shrink-0 transition-colors"
+                      title="Edit"
+                    >
+                      <Pencil size={16} />
+                    </button>
                     <button
                       onClick={() => {
                         setSelectedId(teamMem._id);
@@ -364,6 +373,10 @@ const Team = () => {
         <div className="fixed z-[9999] inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center">
           <AddTeam setOpenAddTeam={setOpenAddTeam} />
         </div>
+      )}
+
+      {editTeamData && (
+        <EditTeam editTeamData={editTeamData} setEditTeamData={setEditTeamData} />
       )}
     </div>
   );
