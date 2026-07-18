@@ -7,6 +7,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import CustomCalendar from "../componenets/CustomCalender";
 import CustomTimePicker from "../componenets/CustomTimePicker";
+import CustomDropDown from "../componenets/CustomDropDown";
 import { formatDateDDMMYYYY } from "../utils/dateFormatter";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
@@ -350,18 +351,12 @@ const LeadDetail = () => {
                 
                 <div>
                   <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 block">Type</label>
-                  <select
-                    name="followUpType"
+                  <CustomDropDown
                     value={form.followUpType}
-                    onChange={handleInputChange}
-                    className="w-full border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 rounded-lg px-3.5 py-2.5 text-sm text-slate-700 transition-all"
-                  >
-                    <option value="Call">Call</option>
-                    <option value="Email">Email</option>
-                    <option value="Meeting">Meeting</option>
-                    <option value="WhatsApp">WhatsApp</option>
-                    <option value="Site Visit">Site Visit</option>
-                  </select>
+                    onChange={(val) => setForm((prev) => ({ ...prev, followUpType: val }))}
+                    options={["Call", "Email", "Meeting", "WhatsApp", "Site Visit"]}
+                    className="w-full h-11 border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 rounded-lg text-sm text-slate-700 transition-all"
+                  />
                 </div>
 
                 <div>
