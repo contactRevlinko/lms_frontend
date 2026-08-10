@@ -46,8 +46,8 @@ const LeadManageRow = ({
     <div className="w-full bg-white border border-slate-100 rounded-xl py-4 px-5 mb-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
         {/* Left Filters */}
-        <div className="flex items-center gap-4 flex-1">
-          <div className="flex items-center gap-2 text-slate-400 mr-2">
+        <div className="flex flex-wrap items-center gap-3 md:gap-4 flex-1">
+          <div className="flex items-center gap-2 text-slate-400 md:mr-2 w-full md:w-auto">
             <ListFilter size={16} />
             <span className="text-xs font-bold uppercase tracking-wider">FILTERS</span>
           </div>
@@ -57,13 +57,11 @@ const LeadManageRow = ({
               options={[
                 "All",
                 "New",
-                "Hot",
-                "Warm",
-                "Cold",
-                "Contacted",
+                "In Followup",
                 "Interested",
-                "Closed Won",
-                "Closed Lost",
+                "Cold",
+                "Lost",
+                "Won",
               ]}
               value={filter}
               onChange={setFilter}

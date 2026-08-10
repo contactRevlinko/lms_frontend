@@ -24,6 +24,12 @@ const SideBar = ({ showSideBar, handleSideBar }) => {
       ? "bg-indigo-600 text-white font-semibold shadow-sm shadow-indigo-100/30"
       : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
     }`;
+    
+  const handleNavClick = () => {
+    if (window.innerWidth < 1024 && typeof handleSideBar === 'function') {
+      handleSideBar();
+    }
+  };
 
   return (
     <div
@@ -51,44 +57,40 @@ const SideBar = ({ showSideBar, handleSideBar }) => {
       </div>
 
       <div className="flex flex-col gap-2">
-        <NavLink to="/dashboard" className={navClass}>
+        <NavLink to="/dashboard" className={navClass} onClick={handleNavClick}>
           <LayoutDashboard size={22} />
           Dashboard
         </NavLink>
 
-        <NavLink to="/leads" className={navClass}>
+        <NavLink to="/leads" className={navClass} onClick={handleNavClick}>
           <UserRoundSearch size={22} />
           Leads
         </NavLink>
 
 
-        <NavLink to="/reminders" className={navClass}>
+        <NavLink to="/reminders" className={navClass} onClick={handleNavClick}>
           <BellRing size={22} />
           Reminders
         </NavLink>
 
-        <NavLink to="/analytics" className={navClass}>
+        <NavLink to="/analytics" className={navClass} onClick={handleNavClick}>
           <ChartLine size={22} />
           Analytics
         </NavLink>
-        <NavLink to="/campaign" className={navClass}>
-          <Megaphone  size={22} />
-         Campaign
-        </NavLink>
 
-        <NavLink to="/source" className={navClass}>
+        <NavLink to="/source" className={navClass} onClick={handleNavClick}>
           <Plus size={22} />
           select source
         </NavLink>
 
         {loginType !== "team" && 
         <>
-         <NavLink to="/team" className={navClass}>
+         <NavLink to="/team" className={navClass} onClick={handleNavClick}>
           <Users size={22} />
           Team
         </NavLink>
 
-        <NavLink to="/settings" className={navClass}>
+        <NavLink to="/settings" className={navClass} onClick={handleNavClick}>
           <Settings size={22} />
           Settings
         </NavLink>

@@ -85,11 +85,11 @@ function App() {
           <Route path="reminders" element={<Reminders />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="source" element={<Source />} />
-           <Route path="campaign" element={<Campaign/>}  />
+          {/* <Route path="campaign" element={<Campaign/>}  />
           <Route
             path="/campaign/create"
             element={<CreateCampaign />}
-          />
+          /> */}
           <Route
             path="team"
             element={
@@ -99,7 +99,7 @@ function App() {
             }
           />
           
-          <Route path="/campaign/:id" element={<CampaignDetail />} />
+          {/* <Route path="/campaign/:id" element={<CampaignDetail />} /> */}
 
 
 

@@ -45,13 +45,11 @@ const LeadMangement = () => {
   const [totalLeads, setTotalLeads] = useState(0);
 
   const [newStatus, setNewStatus] = useState(0);
-  const [hot, setHot] = useState(0);
+  const [inFollowup, setInFollowup] = useState(0);
+  const [interested, setInterested] = useState(0);
   const [cold, setCold] = useState(0);
-  const [warm, setWarm] = useState(0);
-  const [inteStatus, setInteStatus] = useState(0);
-  const [contactStatus, setContactStatus] = useState(0);
-  const [wonStatus, setWonStatus] = useState(0);
-  const [lostStatus, setLostStatus] = useState(0);
+  const [lost, setLost] = useState(0);
+  const [won, setWon] = useState(0);
   const [addLeadModal, setAddLeadModal] = useState(false);
   const [priorityFilter, setPriorityFilter] = useState("All");
 
@@ -103,16 +101,21 @@ const LeadMangement = () => {
         console.log(total, byStatus);
         setTotalLeads(total);
         setNewStatus(byStatus.find((s) => s._id === "New")?.count || 0);
-        setHot(byStatus.find((s) => s._id === "Hot")?.count || 0);
-        setWarm(byStatus.find((s) => s._id === "Warm")?.count || 0);
-        setCold(byStatus.find((s) => s._id === "Cold")?.count || 0);
-        setInteStatus(byStatus.find((s) => s._id === "Interested")?.count || 0);
-        setContactStatus(
-          byStatus.find((s) => s._id === "Contacted")?.count || 0,
+        setInFollowup(
+          (byStatus.find((s) => s._id === "In Followup")?.count || 0) +
+          (byStatus.find((s) => s._id === "Hot")?.count || 0) +
+          (byStatus.find((s) => s._id === "Warm")?.count || 0) +
+          (byStatus.find((s) => s._id === "Contacted")?.count || 0)
         );
-        setWonStatus(byStatus.find((s) => s._id === "Closed Won")?.count || 0);
-        setLostStatus(
-          byStatus.find((s) => s._id === "Closed Lost")?.count || 0,
+        setInterested(byStatus.find((s) => s._id === "Interested")?.count || 0);
+        setCold(byStatus.find((s) => s._id === "Cold")?.count || 0);
+        setLost(
+          (byStatus.find((s) => s._id === "Lost")?.count || 0) +
+          (byStatus.find((s) => s._id === "Closed Lost")?.count || 0)
+        );
+        setWon(
+          (byStatus.find((s) => s._id === "Won")?.count || 0) +
+          (byStatus.find((s) => s._id === "Closed Won")?.count || 0)
         );
       }
     } catch (err) {
@@ -220,8 +223,8 @@ const LeadMangement = () => {
   
     const matchStatus = filter === "All" || lead.status === filter;
     const statusGroup = {
-      High: ["Warm", "Hot", "Interested", "New"],
-      Medium: ["Contacted"],
+      High: ["In Followup", "Interested", "New"],
+      Medium: [],
       Low: ["Cold"],
     };
     const matchPriority =
@@ -278,13 +281,11 @@ const LeadMangement = () => {
 
     const statusOptions = [
       "New",
-      "Hot",
-      "Warm",
-      "Cold",
-      "Contacted",
+      "In Followup",
       "Interested",
-      "Closed Won",
-      "Closed Lost",
+      "Cold",
+      "Lost",
+      "Won",
     ];
 
     const sourceOptions = [
@@ -354,16 +355,16 @@ const LeadMangement = () => {
       color: { bg: "bg-blue-100", text: "text-blue-600" },
     },
     {
-      name: "HOT",
-      leads: hot,
-      icon: Flame,
-      color: { bg: "bg-red-100", text: "text-red-600" },
+      name: "IN FOLLOWUP",
+      leads: inFollowup,
+      icon: PhoneCall,
+      color: { bg: "bg-orange-100", text: "text-orange-600" },
     },
     {
-      name: "WARM",
-      leads: warm,
-      icon: SunMedium,
-      color: { bg: "bg-orange-100", text: "text-orange-600" },
+      name: "INTERESTED",
+      leads: interested,
+      icon: HeartHandshake,
+      color: { bg: "bg-green-100", text: "text-green-600" },
     },
     {
       name: "COLD",
@@ -372,26 +373,14 @@ const LeadMangement = () => {
       color: { bg: "bg-cyan-100", text: "text-cyan-600" },
     },
     {
-      name: "INTERESTED",
-      leads: inteStatus,
-      icon: HeartHandshake,
-      color: { bg: "bg-green-100", text: "text-green-600" },
-    },
-    {
-      name: "CONTACTED",
-      leads: contactStatus,
-      icon: PhoneCall,
-      color: { bg: "bg-purple-100", text: "text-purple-600" },
-    },
-    {
-      name: "CLOSED WON",
-      leads: wonStatus,
+      name: "WON",
+      leads: won,
       icon: Trophy,
       color: { bg: "bg-emerald-100", text: "text-emerald-600" },
     },
     {
-      name: "CLOSED LOST",
-      leads: lostStatus,
+      name: "LOST",
+      leads: lost,
       icon: XCircle,
       color: { bg: "bg-pink-100", text: "text-pink-600" },
     },

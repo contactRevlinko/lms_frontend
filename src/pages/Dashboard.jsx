@@ -1,320 +1,253 @@
-import {
-  ChartNoAxesCombined,
-  ChartPie,
-  FunnelIcon,
-  HeartHandshake,
-  SunMedium,
-  Users,
-  Plus,
-  Link2,
+import React, { useEffect, useState, useMemo } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchAllLead } from "../redux/allLeadSlice";
+import { 
+  Users, CheckCircle, TrendingUp, Calendar, PhoneCall, 
+  Plus, BarChart2, Activity, ChevronRight, UserPlus
 } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import SqureCard from "../componenets/SqureCard";
-import AddLead from "../pages/AddLead"
-import {
-  Cell,
-  Funnel,
-  FunnelChart,
-  LabelList,
-  Legend,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-} from "recharts";
-import CustomFunnelTooltip from "../componenets/CustonToolTip";
-
-const fixedColors = {
-  Instagram: "#E1306C",
-  Whatsapp: "#25D366",
-  Referral: "#F59E0B",
-};
-
-const colorMap = {};
-
-const getColorFromString = (str = "") => {
-  if (fixedColors[str]) return fixedColors[str];
-  if (colorMap[str]) return colorMap[str];
-
-  const goldenAngle = 137.508;
-
-  const keys = Object.keys(colorMap);
-  const index = keys.length;
-
-  const hue = (index * goldenAngle) % 360;
-
-  const color = `hsl(${hue}, 70%, 50%)`;
-
-  colorMap[str] = color;
-
-  return color;
-};
-export const STATUS_COLORS = {
-  New: "#6366F1",         
-  Hot: "#EF4444",         
-  Warm: "#F59E0B",        
-  Cold: "#06B6D4",         
-  Contacted: "#8B5CF6",    
-  Interested: "#EC4899",   
-  "Closed Won": "#10B981", 
-  "Closed Lost": "#6B7280", 
-  "No Status": "#CBD5E1",
-};
+import { formatDateDDMMYYYY } from "../utils/dateFormatter";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 const Dashboard = () => {
-  const [data, setData] = useState([]);
-  const [total, setTotal] = useState(0);
-  const [souceData, setSourceData] = useState([]);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { allLeads } = useSelector((state) => state.lead);
 
-  const [warm, setWarm] = useState(0);
-  const [inteStatus, setInteStatus] = useState(0);
-  const [wonStatus, setWonStatus] = useState(0);
+  const [followups, setFollowups] = useState([]);
+  
+  // Try to get user info for personalized greeting
+  const loginType = localStorage.getItem("loginType");
+  const loggedUser = loginType === "team"
+    ? JSON.parse(localStorage.getItem("teamMember") || "{}")
+    : JSON.parse(localStorage.getItem("user") || "{}");
 
-  const fetchStatusCount = async () => {
+  const fetchTodaysFo = async () => {
     try {
       const token = localStorage.getItem("token");
-
-      const res = await fetch(`${BASE_URL}/leads/analytics`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const res = await fetch(`${BASE_URL}/followups/today`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-
       const result = await res.json();
-
-      if (res.ok && result.success) {
-        const formattedData = result.byStatus.map((s) => ({
-          name: s._id || "No Status",
-          count: s.count,
-        }));
-
-        setTotal(result.total);
-        setData(formattedData);
-
-        const warmLead =
-          formattedData.find((item) => item.name === "Warm")?.count || 0;
-
-        const interestedLead =
-          formattedData.find((item) => item.name === "Interested")?.count || 0;
-
-        const wonLead =
-          formattedData.find((item) => item.name === "Closed Won")?.count || 0;
-
-        setWarm(warmLead);
-        setInteStatus(interestedLead);
-        setWonStatus(wonLead);
-      }
+      setFollowups(result.data || []);
     } catch (err) {
-      console.log("Dashboard API error:", err);
-    }
-  };
-
-  const fetchSource = async () => {
-    try {
-      const token = localStorage.getItem("token");
-
-      const res = await fetch(`${BASE_URL}/leads/source`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const result = await res.json();
-
-      if (res.ok && result.success) {
-        const formattedDataSource = result.source.map((s) => ({
-          name: s._id || "No Source",
-          count: s.count,
-        }));
-
-        setSourceData(formattedDataSource);
-      }
-    } catch (err) {
-      console.log("Source API error:", err);
+      console.log(err);
     }
   };
 
   useEffect(() => {
-    fetchStatusCount();
-    fetchSource();
-  }, []);
+    fetchTodaysFo();
+    dispatch(fetchAllLead());
+  }, [dispatch]);
 
-  const conversionRate =
-    total > 0 ? ((wonStatus / total) * 100).toFixed(1) : 0;
+  // Derived Metrics
+  const metrics = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-  const cardData = [
-    {
-      name: "TOTAL LEADS",
-      leads: total,
-      icon: Users,
-      color: { bg: "bg-indigo-100", text: "text-indigo-600" },
-    },
-    {
-      name: "WARM",
-      leads: warm,
-      icon: SunMedium,
-      color: { bg: "bg-orange-100", text: "text-orange-600" },
-    },
-    {
-      name: "INTERESTED",
-      leads: inteStatus,
-      icon: HeartHandshake,
-      color: { bg: "bg-pink-100", text: "text-pink-600" },
-    },
-    {
-      name: "CONVERSION RATE",
-      leads: `${conversionRate}%`,
-      icon: ChartNoAxesCombined,
-      color: { bg: "bg-amber-100", text: "text-amber-600" },
-    },
-  ];
+    let leadsToday = 0;
+    let wonToday = 0;
+    let totalActive = 0;
+
+    allLeads.forEach((lead) => {
+      const leadDate = new Date(lead.createdAt);
+      if (leadDate >= today) {
+        leadsToday++;
+      }
+      
+      if (lead.status === "Won" || lead.status === "Closed Won") {
+        const updateDate = new Date(lead.updatedAt || lead.createdAt);
+        if (updateDate >= today) wonToday++;
+      }
+
+      if (!["Won", "Lost", "Closed Won", "Closed Lost", "Cold"].includes(lead.status)) {
+        totalActive++;
+      }
+    });
+
+    return { leadsToday, wonToday, totalActive };
+  }, [allLeads]);
+
+  // Recent 5 leads
+  const recentLeads = useMemo(() => {
+    return [...allLeads]
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 5);
+  }, [allLeads]);
+
+  const formatTime = (time) => {
+    if (!time) return "No Time";
+    return new Date(`1970-01-01T${time}`).toLocaleTimeString("en-US", {
+      hour: "numeric", minute: "2-digit", hour12: true,
+    });
+  };
 
   return (
-     <div className="w-full">
-    
-      <div className="mb-6">
-        <h1 className="text-[28px] font-bold tracking-tight text-[#0f172a]">Analytics Overview</h1>
-        <p className="text-[14px] text-slate-500 mt-1 font-medium">
-          Track lead performance, sources, and conversion trends in real time
-        </p>
+    <div className="w-full">
+      
+      {/* HEADER SECTION */}
+      <div className="mb-5 md:mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-semibold text-slate-900">
+            Welcome back, {loggedUser?.name ? loggedUser.name.split(' ')[0] : 'Team'}! 👋
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Here's what needs your attention today.
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <Link 
+            to="/analytics"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition shadow-sm"
+          >
+            <BarChart2 size={16} className="text-indigo-600" />
+            Analytics
+          </Link>
+          <Link 
+            to="/add-lead"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition shadow-sm"
+          >
+            <Plus size={16} />
+            Add Lead
+          </Link>
+        </div>
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {cardData.map((card) => (
-          <SqureCard
-            key={card.name}
-            name={card.name}
-            leads={card.leads}
-            icon={card.icon}
-            color={card.color}
-          />
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="mb-5 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50">
-              <FunnelIcon className="h-5 w-5 text-indigo-600" />
-            </div>
-
-            <div>
-              <h2 className="text-base font-bold text-slate-900">
-                Lead Status Breakdown
-              </h2>
-              <p className="text-[10px] uppercase tracking-wider text-slate-500 mt-1">
-                Funnel view of current lead stages
-              </p>
-            </div>
+      {/* 4 MINI METRIC CARDS */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 mb-5 md:mb-8">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm relative p-4 md:p-5 border-l-4 border-l-blue-500">
+          <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-2 md:mb-4">
+            <UserPlus size={18} className="md:w-5 md:h-5" />
           </div>
+          <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-slate-400">Leads Today</p>
+          <h2 className="text-2xl md:text-3xl font-bold text-slate-800 mt-1">{metrics.leadsToday}</h2>
+        </div>
 
-          <div className="h-[460px] w-full px-2 sm:px-10 pb-4 mt-2">
-            {data.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <FunnelChart>
-                  <Tooltip content={<CustomFunnelTooltip />} />
-                  <Funnel dataKey="count" data={data} isAnimationActive>
-                    <LabelList
-                      position="center"
-                      fill="#ffffff"
-                      stroke="none"
-                      dataKey="name"
-                      fontSize={12}
-                    />
-                    {data.map((entry, index) => (
-                      <Cell
-                        key={index}
-                        fill={STATUS_COLORS[entry.name] || "#CBD5E1"}
-                        stroke="#ffffff"
-                        strokeWidth={1.5}
-                      />
-                    ))}
-                  </Funnel>
-                </FunnelChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center text-center">
-                <div className="w-36 h-36 rounded-full bg-indigo-50 flex items-center justify-center mb-6">
-                  <FunnelIcon className="w-20 h-20 text-indigo-300" />
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm relative p-4 md:p-5 border-l-4 border-l-orange-500">
+          <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center mb-2 md:mb-4">
+            <PhoneCall size={18} className="md:w-5 md:h-5" />
+          </div>
+          <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-slate-400">Follow-Ups</p>
+          <h2 className="text-2xl md:text-3xl font-bold text-slate-800 mt-1">{followups.length}</h2>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm relative p-4 md:p-5 border-l-4 border-l-green-500">
+          <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-green-50 text-green-600 flex items-center justify-center mb-2 md:mb-4">
+            <CheckCircle size={18} className="md:w-5 md:h-5" />
+          </div>
+          <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-slate-400">Won Today</p>
+          <h2 className="text-2xl md:text-3xl font-bold text-slate-800 mt-1">{metrics.wonToday}</h2>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm relative p-4 md:p-5 border-l-4 border-l-indigo-500">
+          <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-2 md:mb-4">
+            <Activity size={18} className="md:w-5 md:h-5" />
+          </div>
+          <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-slate-400">Pipeline</p>
+          <h2 className="text-2xl md:text-3xl font-bold text-slate-800 mt-1">{metrics.totalActive}</h2>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        
+        {/* FOLLOW-UPS DUE TODAY SECTION */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col h-[380px] md:h-[500px]">
+          <div className="p-4 md:p-5 border-b border-slate-100 flex justify-between items-center">
+            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <PhoneCall size={18} className="text-orange-500" />
+              Needs Action Today
+            </h3>
+            <Link to="/reminders" className="text-sm font-semibold text-indigo-600 hover:underline">
+              View all
+            </Link>
+          </div>
+          <div className="flex-1 overflow-y-auto p-2">
+            {followups.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-center p-6">
+                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                  <CheckCircle className="text-slate-300" size={32} />
                 </div>
-
-                <h2 className="text-2xl font-bold text-slate-900 mb-3">
-                  No lead data yet
-                </h2>
-
-                <p className="text-slate-500 max-w-sm mb-6">
-                  Once you start getting leads, you’ll see the funnel breakdown of all
-                  stages here.
-                </p>
-
-                {/* <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2">
-                  <Plus size={20} />
-                  Add Your First Lead
-                </button>
-           */}
+                <p className="font-semibold text-slate-700">All caught up!</p>
+                <p className="text-sm text-slate-500 mt-1">No follow-ups scheduled for today.</p>
               </div>
-            )}
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="mb-5 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-pink-50">
-              <ChartPie className="h-5 w-5 text-pink-600" />
-            </div>
-
-            <div>
-              <h2 className="text-base font-bold text-slate-900">
-                Lead Source Breakdown
-              </h2>
-              <p className="text-[10px] uppercase tracking-wider text-slate-500 mt-1">
-                Distribution of leads by source
-              </p>
-            </div>
-          </div>
-
-          <div className="h-[320px] sm:h-[420px] md:h-[460px] w-full overflow-hidden mt-2">
-            {souceData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart margin={{ top: 10, right: 10, bottom: 20, left: 10 }}>
-                  <Pie
-                    data={souceData}
-                    dataKey="count"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius="75%"
-                    labelLine={false}
-                    label={({ name, percent }) =>
-                      `${name} ${(percent * 100).toFixed(0)}%`
-                    }
-                    fontSize={12}
-                  >
-                    {souceData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={getColorFromString(entry.name)}
-                        stroke="#ffffff"
-                        strokeWidth={1.5}
-                      />
-                    ))}
-               
-                  </Pie>
-
-                  <Tooltip />
-                  <Legend iconType="circle" />
-                </PieChart>
-              </ResponsiveContainer>
             ) : (
-              // your empty state
-              <div className="h-full flex flex-col items-center justify-center text-center">
-                No source data yet
-              </div>
+              followups.map((follow, idx) => (
+                <div 
+                  key={follow._id} 
+                  onClick={() => navigate(`/leads/${follow.leadId?._id || follow.leadId}`)}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 m-2 rounded-xl bg-slate-50 hover:bg-orange-50/50 border border-slate-100 cursor-pointer transition-colors"
+                >
+                  <div className="mb-2 sm:mb-0">
+                    <h4 className="font-bold text-slate-800 capitalize">
+                      {follow.leadId?.name || "Unknown Lead"}
+                    </h4>
+                    <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                      <span className="font-semibold text-slate-700">{follow.followUpType}</span> 
+                      • {formatTime(follow.followUpTime)}
+                    </p>
+                  </div>
+                  <button className="flex items-center gap-1 px-3 py-1.5 bg-white text-orange-600 border border-orange-200 rounded-lg text-xs font-semibold hover:bg-orange-600 hover:text-white transition-colors">
+                    <PhoneCall size={12} />
+                    Action
+                  </button>
+                </div>
+              ))
             )}
           </div>
         </div>
+
+        {/* RECENT LEADS SECTION */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col h-[380px] md:h-[500px]">
+          <div className="p-4 md:p-5 border-b border-slate-100 flex justify-between items-center">
+            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <Users size={18} className="text-indigo-500" />
+              Newest Leads (Speed to Lead)
+            </h3>
+            <Link to="/leads" className="text-sm font-semibold text-indigo-600 hover:underline">
+              View all
+            </Link>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            {recentLeads.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-center p-6">
+                <Users className="text-slate-300 mb-4" size={32} />
+                <p className="font-semibold text-slate-700">No leads yet</p>
+              </div>
+            ) : (
+              recentLeads.map((lead) => (
+                <div 
+                  key={lead._id}
+                  onClick={() => navigate(`/leads/${lead._id}`)}
+                  className="flex items-center justify-between p-4 md:p-5 border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-lg shrink-0">
+                      {lead.name ? lead.name.charAt(0).toUpperCase() : "?"}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-800 capitalize">{lead.name || "Unknown"}</h4>
+                      <div className="flex items-center gap-2 text-xs mt-1">
+                        <span className={`px-2 py-0.5 rounded-full font-semibold ${lead.status === 'New' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}>
+                          {lead.status}
+                        </span>
+                        <span className="text-slate-400">•</span>
+                        <span className="text-slate-500">
+                          {new Date(lead.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-slate-400 group-hover:text-indigo-600 transition-colors">
+                    <ChevronRight size={20} />
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
       </div>
     </div>
   );

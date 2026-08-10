@@ -109,12 +109,38 @@ const Campaign = () => {
                 </div>
 
                 {!isTeamLogin && (
-                    <button
-                        onClick={() => setShowCreateCampaign(true)}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl font-medium w-full sm:w-auto"
-                    >
-                        + Campaign
-                    </button>
+                    <div className="flex gap-3 w-full sm:w-auto">
+                        <button
+                            onClick={async () => {
+                                const toastId = toast.loading("Syncing with Meta...");
+                                try {
+                                    const token = localStorage.getItem("token");
+                                    const res = await fetch(`${BASE_URL}/campaign/sync-meta`, {
+                                        method: "POST",
+                                        headers: { Authorization: `Bearer ${token}` }
+                                    });
+                                    const data = await res.json();
+                                    if (res.ok) {
+                                        toast.success(data.message, { id: toastId });
+                                        getCampaign(); // Refresh list
+                                    } else {
+                                        toast.error(data.message || "Failed to sync", { id: toastId });
+                                    }
+                                } catch (err) {
+                                    toast.error("Network error during sync", { id: toastId });
+                                }
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-medium flex-1 sm:flex-none shadow-sm transition-colors"
+                        >
+                            Sync with Meta 🔄
+                        </button>
+                        <button
+                            onClick={() => setShowCreateCampaign(true)}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl font-medium flex-1 sm:flex-none shadow-sm transition-colors"
+                        >
+                            + Campaign
+                        </button>
+                    </div>
                 )}
             </div>
 
