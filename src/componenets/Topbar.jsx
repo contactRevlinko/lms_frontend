@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router";
 
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 const Topbar = ({ handleSideBar }) => {
 
@@ -46,7 +47,7 @@ const Topbar = ({ handleSideBar }) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
-      const res = await fetch("http://localhost:5001/api/notification", { // Make sure this matches BASE_URL
+      const res = await fetch(`${BASE_URL}/notification`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -61,7 +62,7 @@ const Topbar = ({ handleSideBar }) => {
   const markAllRead = async () => {
     try {
       const token = localStorage.getItem("token");
-      await fetch("http://localhost:5001/api/notification/mark-all-read", {
+      await fetch(`${BASE_URL}/notification/mark-all-read`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` }
       });
