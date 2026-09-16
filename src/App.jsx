@@ -4,6 +4,7 @@ import { Route, Routes, Navigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import AddLead from "./pages/AddLead";
 import Reminders from "./pages/Reminders";
+import LandingPage from "./pages/LandingPage";
 
 import Layout from "./componenets/Layout";
 import Analytics from "./componenets/Analytics";
@@ -62,7 +63,7 @@ function App() {
       />
 
       <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<LandingPage />} />
 
         <Route path="/login" element={<Login />} />
         <Route path="/team-login" element={<TeamLogin />} />
