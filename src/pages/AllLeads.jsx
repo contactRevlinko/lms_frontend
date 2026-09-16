@@ -184,6 +184,7 @@ const AllLeads = ({ fetchStatusCount, setSearch, filtered = [], sortOrderIndex, 
                     <th className="px-5 py-4">Lead Info</th>
                     <th className="px-5 py-4">Status</th>
                     {!isTeamLogin && <th className="px-5 py-4">Assigned To</th>}
+                    <th className="px-5 py-4">Created At</th>
                     <th className="px-5 py-4">Next Follow-Up</th>
                     <th className="px-5 py-4 text-right">Actions</th>
                   </tr>
@@ -243,6 +244,13 @@ const AllLeads = ({ fetchStatusCount, setSearch, filtered = [], sortOrderIndex, 
                           </div>
                         </td>
                       )}
+
+                      {/* Created At */}
+                      <td className="px-5 py-3">
+                        <span className="text-[12px] font-medium text-slate-500">
+                          {lead.createdAt ? formatDateDDMMYYYY(lead.createdAt) : "N/A"}
+                        </span>
+                      </td>
 
                       {/* 5. Next Follow Up */}
                       <td className="px-5 py-3">
@@ -314,6 +322,13 @@ const AllLeads = ({ fetchStatusCount, setSearch, filtered = [], sortOrderIndex, 
                       </span>
                     </div>
                     <h1 className="text-lg font-bold text-slate-900 capitalize pr-20 truncate">{lead.name}</h1>
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 mt-2">
+                      <CalIcon size={14} className="text-indigo-400" />
+                      Created At: 
+                      <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-500">
+                        {lead.createdAt ? formatDateDDMMYYYY(lead.createdAt) : "N/A"}
+                      </span>
+                    </div>
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 mt-2">
                       <CalIcon size={14} className="text-indigo-400" />
                       Next Follow-up: 
