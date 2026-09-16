@@ -231,7 +231,7 @@ const LeadMangement = () => {
       priorityFilter === "All" ||
       statusGroup[priorityFilter]?.includes(lead.status);
 
-    const leadDate = lead.followUpDate ? lead.followUpDate.split("T")[0] : "";
+    const leadDate = lead.createdAt ? lead.createdAt.split("T")[0] : "";
     const matchDate = !selectDate || selectDate === leadDate;
     return matchPriority && matchSearch && matchStatus && matchDate  ;
   })

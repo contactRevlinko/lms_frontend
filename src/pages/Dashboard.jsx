@@ -105,13 +105,6 @@ const Dashboard = () => {
             <BarChart2 size={16} className="text-indigo-600" />
             Analytics
           </Link>
-          <Link 
-            to="/add-lead"
-            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition shadow-sm"
-          >
-            <Plus size={16} />
-            Add Lead
-          </Link>
         </div>
       </div>
 
