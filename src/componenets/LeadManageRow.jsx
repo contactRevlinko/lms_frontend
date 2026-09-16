@@ -22,6 +22,9 @@ const LeadManageRow = ({
 
   priorityFilter,
   setPriorityFilter,
+  sourceFilter,
+  setSourceFilter,
+  uniqueSources,
   clearFilters,
   hasFilters,
 }) => {
@@ -74,6 +77,15 @@ const LeadManageRow = ({
               options={["All", "High", "Medium", "Low"]}
               value={priorityFilter}
               onChange={setPriorityFilter}
+              className="rounded-lg h-8"
+            />
+          </div>
+
+          <div className="w-[120px]">
+            <CustomDropDown
+              options={uniqueSources}
+              value={sourceFilter}
+              onChange={setSourceFilter}
               className="rounded-lg h-8"
             />
           </div>

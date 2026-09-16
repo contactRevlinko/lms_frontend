@@ -37,6 +37,7 @@ const LeadMangement = () => {
   }, [dispatch]);
 
   const [filter, setFilter] = useState("All");
+  const [sourceFilter, setSourceFilter] = useState("All");
   const [selectDate, setSelectDate] = useState("");
   const [search, setSearch] = useState("");
   const [sortOrder, setSortOrder] = useState("");
@@ -231,9 +232,11 @@ const LeadMangement = () => {
       priorityFilter === "All" ||
       statusGroup[priorityFilter]?.includes(lead.status);
 
+    const matchSource = sourceFilter === "All" || lead.source === sourceFilter;
+
     const leadDate = lead.createdAt ? lead.createdAt.split("T")[0] : "";
     const matchDate = !selectDate || selectDate === leadDate;
-    return matchPriority && matchSearch && matchStatus && matchDate  ;
+    return matchPriority && matchSearch && matchStatus && matchSource && matchDate;
   })
 
 
@@ -389,6 +392,7 @@ const LeadMangement = () => {
   const clearFilters = () => {
     setFilter("All");
     setPriorityFilter("All");
+    setSourceFilter("All");
     setSelectDate("");
     setSearch("");
     setSortOrder("");
@@ -396,7 +400,8 @@ const LeadMangement = () => {
     setActiveSortType("index");
   };
 
-  const hasFilters = filter !== "All" || priorityFilter !== "All" || selectDate !== "" || search !== "" || sortOrder !== "";
+  const hasFilters = filter !== "All" || priorityFilter !== "All" || sourceFilter !== "All" || selectDate !== "" || search !== "" || sortOrder !== "";
+  const uniqueSources = ["All", ...new Set((allLeads || []).map(lead => lead.source).filter(Boolean))];
 
   return (
     <div className="w-full">
@@ -534,6 +539,9 @@ const LeadMangement = () => {
       <LeadManageRow
         filter={filter}
         setFilter={setFilter}
+        sourceFilter={sourceFilter}
+        setSourceFilter={setSourceFilter}
+        uniqueSources={uniqueSources}
         filtered={sortedLead}
         selectDate={selectDate}
         setSelectDate={setSelectDate}
